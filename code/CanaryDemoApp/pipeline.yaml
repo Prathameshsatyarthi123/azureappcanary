@@ -1,6 +1,9 @@
 trigger:
 - main
 
+pool:
+  name: myagent
+
 variables:
   appName: demowebapp878
   artifactName: drop
