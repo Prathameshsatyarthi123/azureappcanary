@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  name: myagent
+  name: myagent   # self-hosted agent only
 
 variables:
   appName: demowebapp878
@@ -12,8 +12,6 @@ stages:
 - stage: Build
   jobs:
   - job: BuildJob
-    pool:
-      vmImage: windows-latest
     steps:
     - task: DotNetCoreCLI@2
       inputs:
@@ -21,6 +19,7 @@ stages:
         projects: '**/*.csproj'
         arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
         zipAfterPublish: true
+
     - publish: $(Build.ArtifactStagingDirectory)
       artifact: $(artifactName)
 
@@ -35,6 +34,7 @@ stages:
           steps:
           - download: current
             artifact: $(artifactName)
+
           - task: AzureWebApp@1
             inputs:
               appName: $(appName)
@@ -65,3 +65,4 @@ stages:
               appName: $(appName)
               sourceSlot: canary
               targetSlot: production
+
