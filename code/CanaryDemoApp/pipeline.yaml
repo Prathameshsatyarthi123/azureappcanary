@@ -1,18 +1,36 @@
 trigger:
 - main
 
+# Use self-hosted agent from Default pool
 pool:
-  name: Default   # self-hosted agent only
+  name: Default
 
 variables:
   appName: demowebapp878
   artifactName: drop
+  azureServiceConnection: Azure-SP-Connection   # <-- CHANGE if different
 
 stages:
+
+# =========================
+# STAGE 1: BUILD
+# =========================
 - stage: Build
+  displayName: Build Application
   jobs:
   - job: BuildJob
+    displayName: Build & Publish Artifact
     steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '8.x'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
+
     - task: DotNetCoreCLI@2
       inputs:
         command: publish
@@ -23,10 +41,15 @@ stages:
     - publish: $(Build.ArtifactStagingDirectory)
       artifact: $(artifactName)
 
+# =========================
+# STAGE 2: CANARY DEPLOY
+# =========================
 - stage: Deploy_Canary
+  displayName: Deploy to Canary Slot
   dependsOn: Build
   jobs:
   - deployment: CanaryDeploy
+    displayName: Deploy to Canary
     environment: canary
     strategy:
       runOnce:
@@ -36,31 +59,46 @@ stages:
             artifact: $(artifactName)
 
           - task: AzureWebApp@1
+            displayName: Deploy to Canary Slot
             inputs:
+              azureSubscription: $(azureServiceConnection)
               appName: $(appName)
               slotName: canary
               package: $(Pipeline.Workspace)/$(artifactName)/**/*.zip
 
+# =========================
+# STAGE 3: VALIDATION
+# =========================
 - stage: Validate
+  displayName: Canary Validation
   dependsOn: Deploy_Canary
   jobs:
   - job: CanaryHealth
+    displayName: Health Check
     steps:
     - script: |
-        curl https://demowebapp878-canary.azurewebsites.net/health
-      displayName: Health Check
+        echo "Running health check..."
+        curl https://$(appName)-canary.azurewebsites.net/health
+      displayName: Canary Health Check
 
+# =========================
+# STAGE 4: PROMOTE TO PROD
+# =========================
 - stage: Promote
+  displayName: Promote Canary to Production
   dependsOn: Validate
   jobs:
   - deployment: SwapSlots
+    displayName: Swap Slots
     environment: production
     strategy:
       runOnce:
         deploy:
           steps:
           - task: AzureAppServiceManage@0
+            displayName: Swap Canary with Production
             inputs:
+              azureSubscription: $(azureServiceConnection)
               action: Swap Slots
               appName: $(appName)
               sourceSlot: canary
