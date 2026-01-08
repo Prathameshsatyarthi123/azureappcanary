@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  name: myagent   # self-hosted agent only
+  name: Default   # self-hosted agent only
 
 variables:
   appName: demowebapp878
