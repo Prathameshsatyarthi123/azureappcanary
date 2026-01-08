@@ -78,7 +78,7 @@ stages:
     steps:
     - script: |
         echo "Running health check..."
-        curl https://$(appName)-canary.azurewebsites.net/health
+        curl https://demowebapp878-degmd8c3huhkcdhj.centralindia-01.azurewebsites.net/
       displayName: Canary Health Check
 
 # =========================
