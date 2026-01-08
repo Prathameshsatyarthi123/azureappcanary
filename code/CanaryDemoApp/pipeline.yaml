@@ -100,7 +100,7 @@ stages:
             inputs:
               azureSubscription: $(azureServiceConnection)
               action: Swap Slots
-              appName: demowebapp878Production
+              WebAppName: 'demowebapp878Production'
               ResourceGroupName: demowebapp878_group
               sourceSlot: canary
               targetSlot: production
