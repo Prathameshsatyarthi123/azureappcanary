@@ -78,7 +78,7 @@ stages:
     steps:
     - script: |
         echo "Running health check..."
-        curl https://demowebapp878-degmd8c3huhkcdhj.centralindia-01.azurewebsites.net/
+        curl https:/ YOUR-CANARY-URL
       displayName: Canary Health Check
 
 # =========================
@@ -100,8 +100,8 @@ stages:
             inputs:
               azureSubscription: $(azureServiceConnection)
               action: Swap Slots
-              WebAppName: 'demowebapp878'
-              ResourceGroupName: demowebapp878_group
+              WebAppName: 'your-app-name'
+              ResourceGroupName: your-resource-group-name
               sourceSlot: canary
               targetSlot: production
 
